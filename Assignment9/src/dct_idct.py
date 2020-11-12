@@ -35,7 +35,7 @@ def partitioned(image):
     return arr
 
 def dct1(data):
-    coeffi = []
+    coeffi = np.zeros((16,16))
     for v in range(16):
         for u in range(16):
             Fvu, cv, cu = 0.0, 1, 1
@@ -51,30 +51,29 @@ def dct1(data):
                     cosu = (u * math.pi * (2*x +1)) / (32)
                     Fvu += data[y][x] * math.cos(cosv) * math.cos(cosu)
             Fvu = (Fvu * cv * cu) / 8
-            coeffi.append([Fvu, v, u])
-    coeffi = sorted(coeffi, key=lambda x : x[0], reverse=True)
-    coeffi = coeffi[:16]
+            coeffi[v][u] = Fvu
     
     return coeffi
 
 def idct1(data, coeffi):
-    narr = [[0.0 for x in range(16)] for y in range(16)]
+    narr = np.zeros((16,16))
     for y in range(16):
         for x in range(16):
             Syx, cv, cu = 0.0, 1, 1
 
-            for Fvu, v, u in coeffi:
-                if v == 0:
-                    cv = math.sqrt(0.5)
-                else :
-                    cv = 1
-                if u == 0:
-                    cu = math.sqrt(0.5)
-                else :
-                    cu = 1
-                cosv = (v * math.pi * (2*y+1)) / (32)
-                cosu = (u * math.pi * (2*x+1)) / (32)
-                Syx += (cv * cu * Fvu) * math.cos(cosv) * math.cos(cosu)
+            for v in range(16):
+                for u in range(16):
+                    if v == 0:
+                        cv = math.sqrt(0.5)
+                    else :
+                        cv = 1
+                    if u == 0:
+                        cu = math.sqrt(0.5)
+                    else :
+                        cu = 1
+                    cosv = (v * math.pi * (2*y+1)) / (32)
+                    cosu = (u * math.pi * (2*x+1)) / (32)
+                    Syx += (cv * cu * coeffi[v][u]) * math.cos(cosv) * math.cos(cosu)
             Syx = Syx / 4
             narr[y][x] = Syx 
 
@@ -86,7 +85,7 @@ def rebuildImage(img_arr):
         new = [[]]
         for j in range(len(img_arr[0])):
             cf = dct(img_arr[i][j], norm='ortho')
-            print(cf.shape)
+            #cf = dct1(img_arr[i][j])
             temp = sorted(cf.flatten(), key=lambda x : x, reverse=True)
             tp = temp[15]
             for k in range(16):
@@ -94,6 +93,7 @@ def rebuildImage(img_arr):
                     if cf[k][l] < tp:
                         cf[k][l] = 0
             narr = idct(cf, norm='ortho')
+            #narr = idct1(img_arr[i][j], cf)
             if j == 0:
                 new = narr
                 continue            
@@ -123,22 +123,22 @@ if __name__ == "__main__":
     z3 = np.zeros((img3.shape[0], img3.shape[1]), dtype="uint8")
     rgb_show(r3, g3, b3, z3)
     
-    rimg_arr = partitioned(r3)
+    rimg_arr = partitioned(r1)
     print("Dct, Idct Red...",end=" ")
     r = rebuildImage(rimg_arr)
     print("Done")
 
-    gimg_arr = partitioned(g3)
+    gimg_arr = partitioned(g1)
     print("Dct, Idct Green...",end=" ")
     g = rebuildImage(gimg_arr)
     print("Done")
 
-    bimg_arr = partitioned(b3)
+    bimg_arr = partitioned(b1)
     print("Dct, Idct Blue...",end=" ")
     b = rebuildImage(bimg_arr)
     print("Done")       
 
-    rgb_show(r, g, b, z3)
+    rgb_show(r, g, b, z1)
 
     inverseImage = cv2.merge((b,g,r))
     cv2.imshow("Inverse", inverseImage)
