@@ -17,15 +17,14 @@ def readImages(folder):
 
     return images
 
-def createDataMatrix(images):
+def createDataMatrix(images, y=32, x=32):
     print("Creating data matrix",end=" ... ")
 
     numImages = len(images)
     data = np.zeros((numImages, 64, 64), dtype=np.float32)
     for i in range(0, numImages):
         image = images[i]
-        image = image[32:96,32:96]
-        data[i,:] = image
+        data[i,:] = image[y:y+64,x:x+64]
 	
     print("DONE")
     return data
@@ -52,6 +51,26 @@ def show_magnitude(data):
 	cv2.imwrite('./eigenfaces/'+str(idx)+'.png', output)
 	idx += 1
     '''
+
+def createImageMatrix(image, y=32, x=32):
+    print("Creating Image matrix",end=" ... ")
+
+    data = np.zeros((64, 64), dtype=np.float32)
+    data = image[y:y+64,x:x+64]
+	
+    print("DONE")
+    return data
+
+def averageDft(image):
+    avgdft = np.zeros((64, 64), dtype=np.float32)
+    avgdft += np.fft.fft2(createImageMatrix(image, 0, 0))
+    avgdft += np.fft.fft2(createImageMatrix(image, 0, 64))
+    avgdft += np.fft.fft2(createImageMatrix(image, 64, 0))
+    avgdft += np.fft.fft2(createImageMatrix(image, 64, 64))
+    avgdft += np.fft.fft2(createImageMatrix(image))
+    avgdft = avgdft/5
+
+
 if __name__ == "__main__":
     imgs = readImages('../image')
     data_arr = createDataMatrix(imgs)
