@@ -3,6 +3,7 @@ import cv2
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.preprocessing import minmax_scale
 
 def readImages(folder):
     images = []
@@ -31,9 +32,17 @@ def createDataMatrix(images):
 
 def show_magnitude(data):
     dft = np.fft.fft2(data)
+    scaled = minmax_scale(abs(dft), feature_range=(0,255))
+    scaled = np.fft.fftshift(scaled)
+    scaled = scaled.astype(np.uint8)
+    output = cv2.resize(scaled, (0, 0), fx=10, fy=10)
+    cv2.imshow("result", output)
+    idft = np.fft.ifft2(dft)
+    idft = idft.astype(np.uint8)
+    iout = cv2.resize(idft, (0, 0), fx=10, fy=10)
+    cv2.imshow("new", iout)
+    cv2.waitKey()
 
-    plt.imshow(abs(dft))
-    plt.show()
     '''
     rec_img = recreate.reshape(sz)
 	rec_img = rec_img.astype(np.uint8)
