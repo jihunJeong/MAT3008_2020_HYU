@@ -97,8 +97,8 @@ if __name__ == "__main__":
     imgs = readImages('../image')
     data_arr = createDataMatrix(imgs, 32, 32)
     
-    #for i in range(len(data_arr)):
-        #show_magnitude(data_arr[i], i+1)
+    for i in range(len(data_arr)):
+        show_magnitude(data_arr[i], i+1)
     
     global boundary
     boundary = np.zeros(10, dtype=np.int32)
